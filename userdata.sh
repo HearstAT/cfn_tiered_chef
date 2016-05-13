@@ -227,11 +227,11 @@ cat > "${CHEFDIR}/chef_stack.json" << EOF
 }
 EOF
 
-    cp -f ${CHEFDIR}/chef-stack.json ${S3DIR}/chef-stack.json
-    sed -i 's/::backend/::frontend/g' ${S3DIR}/chef-stack.json
+    cp -f ${CHEFDIR}/chef_stack.json ${S3DIR}/chef_stack.json
+    sed -i 's/::backend/::frontend/g' ${S3DIR}/chef_stack.json
 
 else
-    cp -f ${S3DIR}/chef-stack.json ${CHEFDIR}/chef-stack.json
+    cp -f ${S3DIR}/chef_stack.json ${CHEFDIR}/chef_stack.json
 fi
 
 # Install berks
@@ -260,7 +260,7 @@ EOF
 cd ${CHEFDIR}
 cat > ${CHEFDIR}/client.rb <<EOF
 cookbook_path "${CHEFDIR}/berks-cookbooks"
-json_attribs "${CHEFDIR}/chef-stack.json"
+json_attribs "${CHEFDIR}/chef_stack.json"
 chef_zero.enabled
 local_mode true
 chef_zero.port 8899
