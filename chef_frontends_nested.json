@@ -156,7 +156,7 @@
       ],
       "Listeners" : [
         {
-          "InstancePort": "443",
+          "InstancePort": "80",
           "LoadBalancerPort": "443",
           "InstanceProtocol": "HTTPS",
           "Protocol": "HTTPS",
@@ -191,7 +191,7 @@
       ],
       "Listeners" : [
         {
-          "InstancePort": "443",
+          "InstancePort": "80",
           "LoadBalancerPort": "443",
           "InstanceProtocol": "HTTPS",
           "Protocol": "HTTPS",
