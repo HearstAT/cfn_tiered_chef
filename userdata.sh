@@ -1,6 +1,6 @@
 #!/bin/bash -xev
 
-#### UserData Chef HA Helper Script v 1.2
+#### UserData Tiered Chef Helper Script v 1.0
 ### Script Params, exported in Cloudformation
 # ${REGION} == AWS::Region
 # ${ACCESS_KEY} == AccessKey && ['aws_access_key_id']

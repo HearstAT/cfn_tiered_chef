@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
-  "Description": "Cloudformation Chef Stack Prime (Manages all Chef HA CF Templates) v1.3",
+  "Description": "Cloudformation Chef Stack Prime (Manages all Tiered Chef Templates) v1.0",
   "Parameters": {
     "HostedZone": {
         "Type": "String",
@@ -207,12 +207,12 @@
     },
     "Cookbook": {
         "Type": "String",
-        "Default": "cf_ha_chef",
+        "Default": "cf_tiered_chef",
         "Description": "Cookbook Name"
     },
     "CookbookGit": {
         "Type": "String",
-        "Default": "https://github.com/HearstAT/cf_ha_chef",
+        "Default": "https://github.com/HearstAT/cf_tiered_chef",
         "Description": "Git Clone URI for Cookbook"
     },
     "CookbookGitBranch": {
@@ -241,7 +241,7 @@
     },
     "UserDataScript": {
       "Type": "String",
-       "Default": "https://raw.githubusercontent.com/HearstAT/cloudformation-chef-ha/master/userdata.sh",
+       "Default": "https://raw.githubusercontent.com/HearstAT/cfn_tiered_chef/master/userdata.sh",
        "Description" : "URL for userdata script to run"
     },
     "BackupEnable": {
