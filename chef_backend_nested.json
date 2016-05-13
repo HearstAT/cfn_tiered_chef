@@ -29,6 +29,11 @@
       "Type" : "String",
       "Default": ""
     },
+    "SignupDisable": {
+      "Description" : "Choose Subnet",
+      "Type" : "String",
+      "Default": ""
+    },
     "IAMRole": {
       "Description" : "Enter IAM Role name",
       "Type" : "String",
@@ -124,7 +129,7 @@
       "Default": "",
       "Description": "Enter how many licenses you have purchased"
     },
-    "DBChoice": {
+    "ExternalDB": {
         "Type": "String",
         "Default": "",
         "Description": "Choose between an external or internal DB configuration"
@@ -150,7 +155,7 @@
         "Default": "",
         "Description": "(External Only) Enter DB URL or VIP"
     },
-    "CookbookChoice": {
+    "ExternalCookbooks": {
         "Type": "String",
         "Default": "",
         "Description": "Choose between an external or internal Cookbook storage configuration"
@@ -334,12 +339,12 @@
                 "export DOMAIN='", { "Ref": "HostedZone" } ,"'\n",
                 "export SECONDARY_DOMAIN='", { "Ref": "SecondaryDomain" } ,"'\n",
                 "export SUBDOMAIN='", { "Ref": "HostedSubdomain" } ,"'\n",
-                "export DB_CHOICE='", { "Ref" : "DBChoice" } ,"'\n",
+                "export DB_CHOICE='", { "Ref" : "ExternalDB" } ,"'\n",
                 "export DB_USER='", { "Ref" : "DBUser" } ,"'\n",
                 "export DB_PASSWORD='", { "Ref" : "DBPassword" } ,"'\n",
                 "export DB_PORT='", { "Ref" : "DBPort" } ,"'\n",
                 "export DB_URL='", { "Ref" : "DBURL" } ,"'\n",
-                "export COOKBOOK_CHOICE='", { "Ref" : "CookbookChoice" } ,"'\n",
+                "export COOKBOOK_CHOICE='", { "Ref" : "ExternalCookbooks" } ,"'\n",
                 "export COOKBOOK_BUCKET='", { "Ref" : "CookbookBucket" } ,"'\n",
                 "export BUCKET='", { "Ref" : "Bucket" } ,"'\n",
                 "export BACKUP_ENABLE='", { "Ref" : "BackupEnable" } ,"'\n",
@@ -350,6 +355,7 @@
                 "export COOKBOOK_GIT='", { "Ref" : "CookbookGit" } ,"'\n",
                 "export COOKBOOK_BRANCH='", { "Ref" : "CookbookGitBranch" } ,"'\n",
                 "export S3DIR='", { "Ref" : "S3Dir" } ,"'\n",
+                "export SIGNUP_DISABLE='", { "Ref" : "SignupDisable" } ,"'\n",
                 "export SUPPORT_EMAIL='", { "Ref" : "SupportEmail" } ,"'\n",
                 "set +xv\n",
                 "export NR_LICENSE='", { "Ref" : "NewRelicLicense" } ,"'\n",

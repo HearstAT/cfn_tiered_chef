@@ -75,11 +75,11 @@
         "Default": "25",
         "Description": "Enter how many licenses you have purchased"
     },
-    "DBChoice": {
+    "ExternalDB": {
         "Type": "String",
-        "Default": "external",
-        "AllowedValues": ["external", "internal"],
-        "Description": "Choose between an external or internal DB configuration"
+        "Default": "true",
+        "AllowedValues": ["true", "false"],
+        "Description": "Choose between an true (external) or false (internal) DB configuration"
     },
     "DBUser": {
         "Type": "String",
@@ -113,11 +113,11 @@
         "Default": "",
         "Description": "Leave Empty! Unless using existing bucket, then enter bucket name here"
     },
-    "CookbookChoice": {
+    "ExternalCookbooks": {
         "Type": "String",
-        "Default": "external",
-        "AllowedValues": ["external", "internal"],
-        "Description": "Choose between an external or internal Cookbook storage configuration"
+        "Default": "true",
+        "AllowedValues": ["true", "false"],
+        "Description": "Choose between an true (external) or false (internal) Cookbook storage configuration"
     },
     "CookbookBucket": {
         "Type": "String",
@@ -376,11 +376,11 @@
             },
             {
                 "Label" : { "default": "Database Configuration" },
-                "Parameters" : ["DBChoice","DBUser","DBPassword", "DBPort", "DBURL"]
+                "Parameters" : ["ExternalDB","DBUser","DBPassword", "DBPort", "DBURL"]
             },
             {
                 "Label" : { "default": "Cookbook Storage Configuration" },
-                "Parameters" : ["CookbookChoice","CookbookBucket"]
+                "Parameters" : ["ExternalCookbooks","CookbookBucket"]
             },
             {
                 "Label" : { "default": "Mail Configuration (Optional)" },
@@ -473,7 +473,7 @@
   },
   "Conditions" : {
     "CreateChefBucket" : {"Fn::Equals" : [{"Ref" : "UseExistingBucket"}, "false"]},
-    "ExternalCookbooks" : {"Fn::Equals" : [{"Ref" : "CookbookChoice"}, "external"]},
+    "ExternalCookbooks" : {"Fn::Equals" : [{"Ref" : "ExternalCookbooks"}, "external"]},
     "ExistingIAM" : {"Fn::Equals" : [{"Ref" : "ExistingIAM"}, "true"]}
   },
   "Resources" : {
@@ -738,13 +738,13 @@
                 "NewRelicEnable": { "Ref": "NewRelicEnable" },
                 "ChefDir": { "Ref": "ChefDir" },
                 "SupportEmail": { "Ref": "SupportEmail" },
-                "DBChoice": { "Ref": "DBChoice" },
+                "ExternalDB": { "Ref": "ExternalDB" },
                 "DBUser": { "Ref": "DBUser" },
                 "DBPassword": { "Ref": "DBPassword" },
                 "DBPort": { "Ref": "DBPort" },
                 "DBURL": { "Ref": "DBURL" },
                 "SignupDisable": { "Ref": "SignupDisable" },
-                "CookbookChoice": { "Ref": "CookbookChoice" },
+                "ExternalCookbooks": { "Ref": "ExternalCookbooks" },
                 "CookbookBucket": { "Ref": "CookbookBucket" },
                 "SumologicAccessID": { "Ref": "SumologicAccessID" },
                 "SumologicAccessKey": { "Ref": "SumologicAccessKey" },
