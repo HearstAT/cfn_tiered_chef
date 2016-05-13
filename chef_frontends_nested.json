@@ -1,0 +1,332 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Cloudformation Chef Frontend Servers v1.3",
+  "Parameters": {
+    "InstanceType": {
+      "Type": "String",
+      "Default": "t2.micro"
+    },
+    "ImageId": {
+      "Type": "String",
+      "Default": ""
+    },
+    "KeyName": {
+      "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+      "Type" : "String"
+    },
+    "IAMRole": {
+      "Description" : "Enter IAM Role name",
+      "Type" : "String",
+      "Default": ""
+    },
+    "IAMProfile": {
+      "Description" : "Enter IAM Role name",
+      "Type" : "String",
+      "Default": ""
+    },
+    "SSHSecurityGroup" : {
+      "Description" : "Select Security Group for SSH Access",
+      "Type": "String",
+      "Default": ""
+    },
+    "LoadBalancerSecurityGroup" : {
+      "Description" : "Select Security Group for SSH Access",
+      "Type": "String",
+      "Default": ""
+    },
+    "VPC": {
+      "Description" : "Choose VPC to use",
+      "Type" : "String",
+      "Default": ""
+    },
+    "SSLCertificateARN": {
+      "Type": "String",
+      "Default": "",
+      "ConstraintDescription": "Certificate ARN for ssl certificate"
+    },
+    "SubnetA": {
+      "Description" : "Choose Subnet",
+      "Type" : "String",
+      "Default": ""
+    },
+    "SubnetB": {
+      "Description" : "Choose Subnet",
+      "Type" : "String",
+      "Default": ""
+    },
+    "FE01ENI": {
+      "Description" : "Choose ENI to use",
+      "Type" : "String",
+      "Default": ""
+    },
+    "FE02ENI": {
+      "Description" : "Choose ENI to use",
+      "Type" : "String",
+      "Default": ""
+    },
+    "HostedZone": {
+      "Type": "String",
+      "Default": "",
+      "ConstraintDescription": "must match a route53 hosted domain/zone"
+    },
+    "HostedSubdomain": {
+      "Type": "String",
+      "Default": "",
+      "ConstraintDescription": "Chosen subdomain"
+    },
+    "S3Dir": {
+        "Type": "String",
+        "Default": "",
+        "Description": "Path to mount S3 Bucket to (created during CFN run)"
+    },
+    "ChefDir": {
+        "Type": "String",
+        "Default": "",
+        "Description": "Path to mount S3 Bucket to (created during CFN run)"
+    },
+    "Cookbook": {
+        "Type": "String",
+        "Default": "",
+        "Description": "Cookbook Name"
+    },
+    "CookbookGit": {
+        "Type": "String",
+        "Default": "",
+        "Description": "Git Clone URI for Cookbook"
+    },
+    "CookbookGitBranch": {
+        "Type": "String",
+        "Default": "",
+        "Description": "Git Clone Branch"
+    },
+    "Bucket": {
+      "Type": "String",
+      "Default": "",
+      "Description": "Enter S3 bucket name for all Citadel items"
+    },
+    "UserDataScript": {
+      "Type": "String",
+      "Default": "",
+      "ConstraintDescription": "URL for userdata script"
+    }
+},
+"Resources": {
+  "FE01EIP": {
+    "Type": "AWS::EC2::EIP",
+    "Properties": {
+      "InstanceId": {
+        "Ref": "FE01EC2Instance"
+      },
+      "Domain": "vpc"
+    }
+  },
+  "FE02EIP": {
+    "Type": "AWS::EC2::EIP",
+    "Properties": {
+      "InstanceId": {
+        "Ref": "FE02EC2Instance"
+      },
+      "Domain": "vpc"
+    }
+  },
+  "ElasticLoadBalancer" : {
+    "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+    "Properties" : {
+      "Instances" : [ { "Ref" : "FE01EC2Instance" },{ "Ref" : "FE02EC2Instance" } ],
+      "SecurityGroups" : [ { "Ref" : "LoadBalancerSecurityGroup" } ],
+      "Subnets" : [ { "Ref" : "SubnetA" },{ "Ref" : "SubnetB" } ],
+      "LBCookieStickinessPolicy" : [
+        {
+          "PolicyName" : "PublicELBCookieStickinessPolicy",
+          "CookieExpirationPeriod" : "3600"
+        }
+      ],
+      "Listeners" : [
+        {
+          "InstancePort": "443",
+          "LoadBalancerPort": "443",
+          "InstanceProtocol": "HTTPS",
+          "Protocol": "HTTPS",
+          "PolicyNames" : [ "PublicELBCookieStickinessPolicy" ],
+          "SSLCertificateId": { "Ref": "SSLCertificateARN" }
+        },
+        {
+          "InstancePort": "80",
+          "LoadBalancerPort": "80",
+          "InstanceProtocol": "HTTP",
+          "Protocol": "HTTP",
+          "PolicyNames" : [ "PublicELBCookieStickinessPolicy" ]
+        }
+      ],
+      "HealthCheck" : {
+        "Target" : "HTTPS:443/humans.txt",
+        "HealthyThreshold" : "2",
+        "UnhealthyThreshold" : "10",
+        "Interval" : "90",
+        "Timeout" : "60"
+      },
+      "Tags" : [
+         { "Key" : "Name", "Value" : "Chef-ELB" }
+      ]
+    }
+  },
+  "ChefDNS" : {
+    "Type" : "AWS::Route53::RecordSetGroup",
+    "Properties" : {
+      "HostedZoneName": { "Fn::Join" : [ "",[{ "Ref" : "HostedZone" } ,"." ] ]},
+      "Comment" : "Zone apex alias targeted to myELB LoadBalancer.",
+      "RecordSets" : [
+        {
+          "Name" : { "Fn::Join": ["",[{ "Ref": "HostedSubdomain" },".",{ "Ref": "HostedZone" },"."]] },
+          "Type" : "A",
+          "AliasTarget" : {
+              "HostedZoneId" : { "Fn::GetAtt" : ["ElasticLoadBalancer", "CanonicalHostedZoneNameID"] },
+              "DNSName" : { "Fn::GetAtt" : ["ElasticLoadBalancer","CanonicalHostedZoneName"] }
+          }
+        }
+      ]
+    }
+  },
+  "FE01EC2Instance": {
+    "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "IamInstanceProfile": { "Ref": "IAMProfile" },
+        "DisableApiTermination": "false",
+        "InstanceInitiatedShutdownBehavior": "stop",
+        "InstanceType": { "Ref": "InstanceType" },
+        "ImageId" : { "Ref": "ImageId" },
+        "KeyName": { "Ref": "KeyName" },
+        "Tags": [ { "Key": "Name", "Value": "Chef-Frontend-FE01" }],
+        "NetworkInterfaces" : [ { "NetworkInterfaceId" : { "Ref" : "FE01ENI" }, "DeviceIndex" : 0 } ],
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/sda1",
+            "Ebs": {
+              "VolumeType": "standard",
+              "DeleteOnTermination": "true",
+              "VolumeSize": "20"
+            }
+          }
+        ],
+        "UserData": {
+          "Fn::Base64" : { "Fn::Join" : ["", [
+                "#!/bin/bash -xev\n",
+                "apt-get update && apt-get -y upgrade\n",
+                "apt-get install -y wget curl python-setuptools python-pip git\n",
+                "# Helper function to set wait timer\n",
+                "function error_exit\n",
+                "{\n",
+                "  /usr/local/bin/cfn-signal -e 1 -r \"$1\" '", { "Ref" : "FE01WaitHandle" }, "'\n",
+                "  exit 1\n",
+                " }\n",
+                "export -f error_exit\n",
+                "curl -Sl ", { "Ref" : "UserDataScript" }," -o /tmp/userdata.sh\n",
+                "chmod +x /tmp/userdata.sh\n",
+                "export REGION='", { "Ref" : "AWS::Region" } ,"'\n",
+                "export IAM_ROLE='", { "Ref" : "IAMRole" } ,"'\n",
+                "export DNS='", { "Fn::Join" : [ "", [ "chef-fe-01", ".", "int", ".", { "Ref" : "HostedZone" } ] ] } ,"'\n",
+                "export DOMAIN='", { "Ref": "HostedZone" } ,"'\n",
+                "export BUCKET='", { "Ref" : "Bucket" } ,"'\n",
+                "export CHEFDIR='", { "Ref" : "ChefDir" } ,"'\n",
+                "export COOKBOOK='", { "Ref" : "Cookbook" } ,"'\n",
+                "export COOKBOOK_GIT='", { "Ref" : "CookbookGit" } ,"'\n",
+                "export COOKBOOK_BRANCH='", { "Ref" : "CookbookGitBranch" } ,"'\n",
+                "export S3DIR='", { "Ref" : "S3Dir" } ,"'\n",
+                "export ROLE='frontend'\n",
+                "/tmp/userdata.sh\n",
+                "# All is well so signal success and let CF know wait function is complete\n",
+                "/usr/local/bin/cfn-signal -e 0 -r \"Server setup complete\" '", { "Ref" : "FE01WaitHandle" }, "'\n",
+                "rm -f /tmp/userdata.sh"
+              ]
+            ]
+          }
+        }
+      }
+    },
+
+    "FE02EC2Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "IamInstanceProfile": { "Ref": "IAMProfile" },
+        "DisableApiTermination": "false",
+        "InstanceInitiatedShutdownBehavior": "stop",
+        "InstanceType": { "Ref": "InstanceType" },
+        "ImageId" : { "Ref": "ImageId" },
+        "KeyName": { "Ref": "KeyName" },
+        "Tags": [ { "Key": "Name", "Value": "Chef-Frontend-FE02" }],
+        "NetworkInterfaces" : [ { "NetworkInterfaceId" : { "Ref" : "FE02ENI" }, "DeviceIndex" : 0 } ],
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/sda1",
+            "Ebs": {
+              "VolumeType": "standard",
+              "DeleteOnTermination": "true",
+              "VolumeSize": "20"
+            }
+          }
+        ],
+        "UserData": {
+          "Fn::Base64" : { "Fn::Join" : ["", [
+                "#!/bin/bash -xev\n",
+                "apt-get update && apt-get -y upgrade\n",
+                "apt-get install -y wget curl python-setuptools python-pip git\n",
+                "# Helper function to set wait timer\n",
+                "function error_exit\n",
+                "{\n",
+                "  /usr/local/bin/cfn-signal -e 1 -r \"$1\" '", { "Ref" : "FE02WaitHandle" }, "'\n",
+                "  exit 1\n",
+                " }\n",
+                "export -f error_exit\n",
+                "curl -Sl ", { "Ref" : "UserDataScript" }," -o /tmp/userdata.sh\n",
+                "chmod +x /tmp/userdata.sh\n",
+                "export REGION='", { "Ref" : "AWS::Region" } ,"'\n",
+                "export IAM_ROLE='", { "Ref" : "IAMRole" } ,"'\n",
+                "export ENI='", { "Ref" : "FE02ENI" } ,"'\n",
+                "export DNS='", { "Fn::Join" : [ "", [ "chef-fe-02", ".", "int", ".", { "Ref" : "HostedZone" } ] ] } ,"'\n",
+                "export BUCKET='", { "Ref" : "Bucket" } ,"'\n",
+                "export CHEFDIR='", { "Ref" : "ChefDir" } ,"'\n",
+                "export COOKBOOK='", { "Ref" : "Cookbook" } ,"'\n",
+                "export COOKBOOK_GIT='", { "Ref" : "CookbookGit" } ,"'\n",
+                "export COOKBOOK_BRANCH='", { "Ref" : "CookbookGitBranch" } ,"'\n",
+                "export S3DIR='", { "Ref" : "S3Dir" } ,"'\n",
+                "export ROLE='frontend'\n",
+                "/tmp/userdata.sh\n",
+                "# All is well so signal success and let CF know wait function is complete\n",
+                "/usr/local/bin/cfn-signal -e 0 -r \"Server setup complete\" '", { "Ref" : "FE02WaitHandle" }, "'\n",
+                "rm -f /tmp/userdata.sh"
+              ]
+            ]
+          }
+        }
+      }
+    },
+
+   "FE01WaitHandle" : {
+     "Type" : "AWS::CloudFormation::WaitConditionHandle"
+   },
+
+   "FE02WaitHandle" : {
+     "Type" : "AWS::CloudFormation::WaitConditionHandle"
+   },
+
+   "FE01WaitCondition" : {
+     "Type" : "AWS::CloudFormation::WaitCondition",
+     "DependsOn" : "FE01EC2Instance",
+     "Properties" : {
+         "Handle" : { "Ref" : "FE01WaitHandle" },
+         "Timeout" : "1600"
+       }
+    },
+
+    "FE02WaitCondition" : {
+      "Type" : "AWS::CloudFormation::WaitCondition",
+      "DependsOn" : "FE02EC2Instance",
+      "Properties" : {
+          "Handle" : { "Ref" : "FE02WaitHandle" },
+          "Timeout" : "1600"
+        }
+     }
+  },
+  "Outputs": {
+  }
+}
