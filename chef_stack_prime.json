@@ -12,6 +12,12 @@
         "Default": "domain.com",
         "Description": "If including a 2nd manual/non-aws domain (optional)"
     },
+    "UseSecondaryDomain": {
+        "Type": "String",
+        "Default": "true",
+        "AllowedValues": ["true", "false"],
+        "Description": "Choose to use a Second Domain, will generate another ELB and require another ssl arn"
+    },
     "ChefSubdomain": {
         "Type": "String",
         "Default": "chef-a",
@@ -22,6 +28,11 @@
         "Type": "String",
         "Default": "arn:aws:iam::",
         "Description": "SSL Certficate ARN for SSL Certficate"
+    },
+    "SecondarySSLCertificateARN": {
+        "Type": "String",
+        "Default": "arn:aws:iam::",
+        "Description": "Secondary SSL Certficate ARN for SSL Certficate"
     },
     "BackendVIP": {
         "Type": "String",
@@ -348,6 +359,10 @@
                 "Parameters" : ["BackendTemplateURL", "FrontendTemplateURL"]
             },
             {
+                "Label" : { "default": "Secondary Domain" },
+                "Parameters" : ["UseSecondaryDomain", "SecondaryDomain", "SecondarySSLCertificateARN"]
+            },
+            {
                 "Label" : { "default": "Bucket Configuration" },
                 "Parameters" : ["UseExistingBucket", "ExistingBucket"]
             },
@@ -357,7 +372,7 @@
             },
             {
                 "Label" : { "default": "Chef Configuration" },
-                "Parameters" : ["ChefSubdomain", "SignupDisable", "SupportEmail", "LicenseCount", "ChefDir", "S3Dir", "BackupEnable", "RestoreFile", "SecondaryDomain"]
+                "Parameters" : ["ChefSubdomain", "SignupDisable", "SupportEmail", "LicenseCount", "ChefDir", "S3Dir", "BackupEnable", "RestoreFile"]
             },
             {
                 "Label" : { "default": "Database Configuration" },
@@ -790,6 +805,8 @@
                 "LoadBalancerSecurityGroup" : { "Ref": "LoadBalancerSecurityGroup" },
                 "VPC": { "Ref": "VPC" },
                 "SSLCertificateARN": { "Ref": "SSLCertificateARN" },
+                "SecondarySSLCertificateARN": { "Ref": "SecondarySSLCertificateARN" },
+                "UseSecondaryDomain": { "Ref": "UseSecondaryDomain" },
                 "SubnetA": { "Ref": "PublicSubnetA" },
                 "SubnetB": { "Ref": "PublicSubnetB" },
                 "FE01ENI": { "Ref": "FE01ENI" },

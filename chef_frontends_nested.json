@@ -39,10 +39,20 @@
       "Type" : "String",
       "Default": ""
     },
+    "UseSecondaryDomain": {
+      "Type": "String",
+      "Default": "",
+      "ConstraintDescription": "Choose to use Secondary domain"
+    },
     "SSLCertificateARN": {
       "Type": "String",
       "Default": "",
       "ConstraintDescription": "Certificate ARN for ssl certificate"
+    },
+    "SecondarySSLCertificateARN": {
+      "Type": "String",
+      "Default": "",
+      "ConstraintDescription": "Secondary Certificate ARN for ssl certificate"
     },
     "SubnetA": {
       "Description" : "Choose Subnet",
@@ -110,6 +120,9 @@
       "ConstraintDescription": "URL for userdata script"
     }
 },
+  "Conditions" : {
+      "SecondaryDomainCon" : {"Fn::Equals" : [{"Ref" : "UseSecondaryDomain"}, "true"]}
+},
 "Resources": {
   "FE01EIP": {
     "Type": "AWS::EC2::EIP",
@@ -129,7 +142,7 @@
       "Domain": "vpc"
     }
   },
-  "ElasticLoadBalancer" : {
+  "PrimaryElasticLoadBalancer" : {
     "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
     "Properties" : {
       "Instances" : [ { "Ref" : "FE01EC2Instance" },{ "Ref" : "FE02EC2Instance" } ],
@@ -149,17 +162,10 @@
           "Protocol": "HTTPS",
           "PolicyNames" : [ "PublicELBCookieStickinessPolicy" ],
           "SSLCertificateId": { "Ref": "SSLCertificateARN" }
-        },
-        {
-          "InstancePort": "80",
-          "LoadBalancerPort": "80",
-          "InstanceProtocol": "HTTP",
-          "Protocol": "HTTP",
-          "PolicyNames" : [ "PublicELBCookieStickinessPolicy" ]
         }
       ],
       "HealthCheck" : {
-        "Target" : "HTTPS:443/humans.txt",
+        "Target" : "HTTP:80/humans.txt",
         "HealthyThreshold" : "2",
         "UnhealthyThreshold" : "10",
         "Interval" : "90",
@@ -167,6 +173,41 @@
       },
       "Tags" : [
          { "Key" : "Name", "Value" : "Chef-ELB" }
+      ]
+    }
+  },
+  "SecondaryElasticLoadBalancer" : {
+    "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+    "Condition" : "SecondaryDomainCon",
+    "Properties" : {
+      "Instances" : [ { "Ref" : "FE01EC2Instance" },{ "Ref" : "FE02EC2Instance" } ],
+      "SecurityGroups" : [ { "Ref" : "LoadBalancerSecurityGroup" } ],
+      "Subnets" : [ { "Ref" : "SubnetA" },{ "Ref" : "SubnetB" } ],
+      "LBCookieStickinessPolicy" : [
+        {
+          "PolicyName" : "PublicELBCookieStickinessPolicy",
+          "CookieExpirationPeriod" : "3600"
+        }
+      ],
+      "Listeners" : [
+        {
+          "InstancePort": "443",
+          "LoadBalancerPort": "443",
+          "InstanceProtocol": "HTTPS",
+          "Protocol": "HTTPS",
+          "PolicyNames" : [ "PublicELBCookieStickinessPolicy" ],
+          "SSLCertificateId": { "Ref": "SecondarySSLCertificateARN" }
+        }
+      ],
+      "HealthCheck" : {
+        "Target" : "HTTP:80/humans.txt",
+        "HealthyThreshold" : "2",
+        "UnhealthyThreshold" : "10",
+        "Interval" : "90",
+        "Timeout" : "60"
+      },
+      "Tags" : [
+         { "Key" : "Name", "Value" : "Chef-Secondary-ELB" }
       ]
     }
   },
@@ -180,8 +221,8 @@
           "Name" : { "Fn::Join": ["",[{ "Ref": "HostedSubdomain" },".",{ "Ref": "HostedZone" },"."]] },
           "Type" : "A",
           "AliasTarget" : {
-              "HostedZoneId" : { "Fn::GetAtt" : ["ElasticLoadBalancer", "CanonicalHostedZoneNameID"] },
-              "DNSName" : { "Fn::GetAtt" : ["ElasticLoadBalancer","CanonicalHostedZoneName"] }
+              "HostedZoneId" : { "Fn::GetAtt" : ["PrimaryElasticLoadBalancer", "CanonicalHostedZoneNameID"] },
+              "DNSName" : { "Fn::GetAtt" : ["PrimaryElasticLoadBalancer","CanonicalHostedZoneName"] }
           }
         }
       ]
