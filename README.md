@@ -1,4 +1,4 @@
-# ha-chef-stack
+# Tiered Chef Stack
 
 Cloudformation Templates to setup our Tiered Chef Stack
 
