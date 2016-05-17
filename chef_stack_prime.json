@@ -351,16 +351,12 @@
     "AWS::CloudFormation::Interface" : {
         "ParameterGroups" : [
             {
-                "Label" : { "default": "Instance & Network Configuration" },
-                "Parameters" : ["BackendInstanceType", "FrontendInstanceType", "KeyName", "SSLCertificateARN", "VPC", "SSHSecurityGroup", "AvailabilityZoneA", "AvailabilityZoneB", "HostedZone", "BackendVIP"]
-            },
-            {
                 "Label" : { "default": "Stack Configuration" },
                 "Parameters" : ["BackendTemplateURL", "FrontendTemplateURL"]
             },
             {
-                "Label" : { "default": "Secondary Domain" },
-                "Parameters" : ["UseSecondaryDomain", "SecondaryDomain", "SecondarySSLCertificateARN"]
+                "Label" : { "default": "Domain Configuration" },
+                "Parameters" : ["HostedZone", "SSLCertificateARN", "UseSecondaryDomain", "SecondaryDomain", "SecondarySSLCertificateARN"]
             },
             {
                 "Label" : { "default": "Bucket Configuration" },
@@ -372,7 +368,7 @@
             },
             {
                 "Label" : { "default": "Chef Configuration" },
-                "Parameters" : ["ChefSubdomain", "SignupDisable", "SupportEmail", "LicenseCount", "ChefDir", "S3Dir", "BackupEnable", "RestoreFile"]
+                "Parameters" : ["ChefSubdomain", "BackendVIP", "SignupDisable", "SupportEmail", "LicenseCount", "ChefDir", "S3Dir", "BackupEnable", "RestoreFile"]
             },
             {
                 "Label" : { "default": "Database Configuration" },
@@ -397,6 +393,10 @@
             {
                 "Label" : { "default": "External Build Items" },
                 "Parameters" : ["Cookbook", "CookbookGit", "CookbookGitBranch", "UserDataScript"]
+            },
+            {
+                "Label" : { "default": "Instance & Network Configuration" },
+                "Parameters" : ["BackendInstanceType", "FrontendInstanceType", "KeyName", "VPC", "SSHSecurityGroup", "AvailabilityZoneA", "AvailabilityZoneB"]
             }
         ]
     }
