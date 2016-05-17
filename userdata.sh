@@ -97,7 +97,7 @@ if [ ${ROLE} == 'backend' ]; then
     echo "${SECRET_KEY}" | tr -d '\n' > ${S3DIR}/aws/secret_key
 
     ## DB Creds
-    if [ ${DB_CHOICE} == 'external' ]; then
+    if [ ${DB_CHOICE} == 'true' ]; then
         echo "${DB_USER}" | tr -d '\n' > ${S3DIR}/db/username
         echo "${DB_PASSWORD}" | tr -d '\n' > ${S3DIR}/db/password
     fi
