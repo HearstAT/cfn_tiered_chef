@@ -389,7 +389,7 @@
      "DependsOn" : "BackendEC2Instance",
      "Properties" : {
          "Handle" : { "Ref" : "WaitHandle" },
-         "Timeout" : "1600"
+         "Timeout" : "2300"
        }
     }
   }

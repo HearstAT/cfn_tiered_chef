@@ -704,7 +704,7 @@
       "Type" : "AWS::CloudFormation::Stack",
       "DependsOn": [ "BackendENI", "BackendSecurityGroup", "ChefServerUser", "PrivateSubnet" ],
       "Properties" : {
-          "TimeoutInMinutes" : "30",
+          "TimeoutInMinutes" : "40",
           "TemplateURL" : { "Ref": "BackendTemplateURL" },
             "Parameters" : {
                 "InstanceType": { "Ref": "BackendInstanceType" },
