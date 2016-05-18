@@ -355,7 +355,7 @@
      "DependsOn" : "FE01EC2Instance",
      "Properties" : {
          "Handle" : { "Ref" : "FE01WaitHandle" },
-         "Timeout" : "1600"
+         "Timeout" : "2300"
        }
     },
 
@@ -364,7 +364,7 @@
       "DependsOn" : "FE02EC2Instance",
       "Properties" : {
           "Handle" : { "Ref" : "FE02WaitHandle" },
-          "Timeout" : "1600"
+          "Timeout" : "2300"
         }
      }
   },
