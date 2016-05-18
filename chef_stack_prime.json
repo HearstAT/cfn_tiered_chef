@@ -108,7 +108,7 @@
         "Default": "",
         "Description": "(External Only) Enter DB URL or VIP"
     },
-    "UseExisitingBucket": {
+    "UseExistingBucket": {
         "Type": "String",
         "Default": "true",
         "AllowedValues": ["true", "false"],
