@@ -792,7 +792,7 @@
         "Type" : "AWS::CloudFormation::Stack",
         "DependsOn": "BackendStack",
         "Properties" : {
-            "TimeoutInMinutes" : "30",
+            "TimeoutInMinutes" : "40",
             "TemplateURL" : { "Ref": "FrontendTemplateURL" },
             "Parameters" : {
                 "InstanceType": { "Ref": "FrontendInstanceType" },
