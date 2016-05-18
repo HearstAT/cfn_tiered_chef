@@ -187,7 +187,7 @@ cat > "${CHEFDIR}/chef_stack.json" << EOF
         },
         "ssl": {
             "enabled": ${ENABLE_SSL}
-        }
+        },
         "backend": {
            "fqdn":  "${DNS}",
            "ip_address": "${IP}"
