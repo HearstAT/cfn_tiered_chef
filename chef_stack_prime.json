@@ -12,11 +12,17 @@
         "Default": "domain.com",
         "Description": "If including a 2nd manual/non-aws domain (optional)"
     },
-    "UseSecondaryDomain": {
+    "UseAdditionalDomain": {
         "Type": "String",
         "Default": "true",
         "AllowedValues": ["true", "false"],
         "Description": "Choose to use a Second Domain, will generate another ELB and require another ssl arn"
+    },
+    "BackendSSL": {
+        "Type": "String",
+        "Default": "true",
+        "AllowedValues": ["true", "false"],
+        "Description": "Choose to use backend ssl in addition to ELB ssl"
     },
     "ChefSubdomain": {
         "Type": "String",
@@ -102,13 +108,13 @@
         "Default": "",
         "Description": "(External Only) Enter DB URL or VIP"
     },
-    "UseExistingBucket": {
+    "UseExisitingBucket": {
         "Type": "String",
         "Default": "true",
         "AllowedValues": ["true", "false"],
         "Description": "Choose to use an existing bucket from previous installation"
     },
-    "ExistingBucket": {
+    "BucketName": {
         "Type": "String",
         "Default": "",
         "Description": "Leave Empty! Unless using existing bucket, then enter bucket name here"
@@ -356,11 +362,11 @@
             },
             {
                 "Label" : { "default": "Domain Configuration" },
-                "Parameters" : ["HostedZone", "SSLCertificateARN", "UseSecondaryDomain", "SecondaryDomain", "SecondarySSLCertificateARN"]
+                "Parameters" : ["HostedZone", "SSLCertificateARN", "UseAdditionalDomain", "SecondaryDomain", "SecondarySSLCertificateARN"]
             },
             {
                 "Label" : { "default": "Bucket Configuration" },
-                "Parameters" : ["UseExistingBucket", "ExistingBucket"]
+                "Parameters" : ["UseExistingBucket", "BucketName"]
             },
             {
                 "Label" : { "default": "Re-Deploy Configuration (When Using Existing Items)" },
@@ -396,7 +402,7 @@
             },
             {
                 "Label" : { "default": "Instance & Network Configuration" },
-                "Parameters" : ["BackendInstanceType", "FrontendInstanceType", "KeyName", "VPC", "SSHSecurityGroup", "AvailabilityZoneA", "AvailabilityZoneB"]
+                "Parameters" : ["BackendInstanceType", "FrontendInstanceType", "BackendSSL", "KeyName", "VPC", "SSHSecurityGroup", "AvailabilityZoneA", "AvailabilityZoneB"]
             }
         ]
     }
@@ -549,8 +555,8 @@
             {
                 "Effect":"Allow",
                 "Action": [ "s3:*" ],
-                "Resource": [ { "Fn::Join" : [ "", [ "arn:aws:s3:::",{"Fn::If" : ["CreateChefBucket", {"Ref" : "ChefBucket"}, {"Ref" : "ExistingBucket"}]}, "/" ] ] },
-                              { "Fn::Join" : [ "", [ "arn:aws:s3:::", {"Fn::If" : ["CreateChefBucket", {"Ref" : "ChefBucket"}, {"Ref" : "ExistingBucket"}]}, "/*" ] ] } ]
+                "Resource": [ { "Fn::Join" : [ "", [ "arn:aws:s3:::",{"Fn::If" : ["CreateChefBucket", {"Ref" : "ChefBucket"}, {"Ref" : "BucketName"}]}, "/" ] ] },
+                              { "Fn::Join" : [ "", [ "arn:aws:s3:::", {"Fn::If" : ["CreateChefBucket", {"Ref" : "ChefBucket"}, {"Ref" : "BucketName"}]}, "/*" ] ] } ]
             },
             {
                 "Effect":"Allow",
@@ -728,8 +734,9 @@
                 "HostedSubdomain": { "Ref": "ChefSubdomain" },
                 "BackupEnable": { "Ref" : "BackupEnable" },
                 "RestoreFile": { "Ref" : "RestoreFile" },
+                "BackendSSL": { "Ref" : "BackendSSL" },
                 "ExistingInstall": { "Ref" : "ExistingInstall" },
-                "Bucket": {"Fn::If" : ["CreateChefBucket", {"Ref" : "ChefBucket"}, {"Ref" : "ExistingBucket"}]},
+                "Bucket": {"Fn::If" : ["CreateChefBucket", {"Ref" : "ChefBucket"}, {"Ref" : "BucketName"}]},
                 "Cookbook": { "Ref": "Cookbook" },
                 "CookbookGit": { "Ref": "CookbookGit" },
                 "CookbookGitBranch": { "Ref": "CookbookGitBranch" },
@@ -806,14 +813,15 @@
                 "VPC": { "Ref": "VPC" },
                 "SSLCertificateARN": { "Ref": "SSLCertificateARN" },
                 "SecondarySSLCertificateARN": { "Ref": "SecondarySSLCertificateARN" },
-                "UseSecondaryDomain": { "Ref": "UseSecondaryDomain" },
+                "UseSecondaryDomain": { "Ref": "UseAdditionalDomain" },
+                "BackendSSL": { "Ref" : "BackendSSL" },
                 "SubnetA": { "Ref": "PublicSubnetA" },
                 "SubnetB": { "Ref": "PublicSubnetB" },
                 "FE01ENI": { "Ref": "FE01ENI" },
                 "FE02ENI": { "Ref": "FE02ENI" },
                 "HostedSubdomain": { "Ref": "ChefSubdomain" },
                 "HostedZone": { "Ref": "HostedZone" },
-                "Bucket": {"Fn::If" : ["CreateChefBucket", {"Ref" : "ChefBucket"}, {"Ref" : "ExistingBucket"}]},
+                "Bucket": {"Fn::If" : ["CreateChefBucket", {"Ref" : "ChefBucket"}, {"Ref" : "BucketName"}]},
                 "Cookbook": { "Ref": "Cookbook" },
                 "CookbookGit": { "Ref": "CookbookGit" },
                 "CookbookGitBranch": { "Ref": "CookbookGitBranch" },

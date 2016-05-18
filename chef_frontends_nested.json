@@ -54,6 +54,11 @@
       "Default": "",
       "ConstraintDescription": "Secondary Certificate ARN for ssl certificate"
     },
+    "BackendSSL": {
+      "Description" : "Enable SSL",
+      "Type" : "String",
+      "Default": ""
+    },
     "SubnetA": {
       "Description" : "Choose Subnet",
       "Type" : "String",
@@ -121,7 +126,8 @@
     }
 },
   "Conditions" : {
-      "SecondaryDomainCon" : {"Fn::Equals" : [{"Ref" : "UseSecondaryDomain"}, "true"]}
+      "SecondaryDomainCon" : {"Fn::Equals" : [{"Ref" : "UseSecondaryDomain"}, "true"]},
+      "BackendSSLCon" : {"Fn::Equals" : [{"Ref" : "BackendSSL"}, "true"]}
 },
 "Resources": {
   "FE01EIP": {
@@ -156,7 +162,7 @@
       ],
       "Listeners" : [
         {
-          "InstancePort": "80",
+          "InstancePort": {"Fn::If" : ["BackendSSLCon", "443", "80"]},
           "LoadBalancerPort": "443",
           "InstanceProtocol": "HTTPS",
           "Protocol": "HTTPS",
@@ -165,7 +171,7 @@
         }
       ],
       "HealthCheck" : {
-        "Target" : "HTTP:80/humans.txt",
+        "Target" : {"Fn::If" : ["BackendSSLCon", "HTTPS:443/humans.txt", "HTTP:80/humans.txt"]},
         "HealthyThreshold" : "2",
         "UnhealthyThreshold" : "10",
         "Interval" : "90",
@@ -191,7 +197,7 @@
       ],
       "Listeners" : [
         {
-          "InstancePort": "80",
+          "InstancePort": {"Fn::If" : ["BackendSSLCon", "443", "80"]},
           "LoadBalancerPort": "443",
           "InstanceProtocol": "HTTPS",
           "Protocol": "HTTPS",
@@ -200,7 +206,7 @@
         }
       ],
       "HealthCheck" : {
-        "Target" : "HTTP:80/humans.txt",
+        "Target" : {"Fn::If" : ["BackendSSLCon", "HTTPS:443/humans.txt", "HTTP:80/humans.txt"]},
         "HealthyThreshold" : "2",
         "UnhealthyThreshold" : "10",
         "Interval" : "90",
