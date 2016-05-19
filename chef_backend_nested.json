@@ -344,7 +344,6 @@
                 "export BUCKET='", { "Ref" : "Bucket" } ,"'\n",
                 "export ENABLE_SSL='", { "Ref" : "BackendSSL" } ,"'\n",
                 "export BACKUP_ENABLE='", { "Ref" : "BackupEnable" } ,"'\n",
-                "export RESTORE_FILE='", { "Ref" : "RestoreFile" } ,"'\n",
                 "export EXISTING_INSTALL='", { "Ref" : "ExistingInstall" } ,"'\n",
                 "export CHEFDIR='", { "Ref" : "ChefDir" } ,"'\n",
                 "export COOKBOOK='", { "Ref" : "Cookbook" } ,"'\n",
