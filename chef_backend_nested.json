@@ -69,11 +69,6 @@
       "Type" : "String",
       "Default": ""
     },
-    "VIP": {
-      "Description" : "Enter VIP",
-      "Type" : "String",
-      "Default": ""
-    },
     "FE01IP": {
       "Description" : "Enter Frontend01 IP",
       "Type" : "String",
@@ -108,11 +103,6 @@
       "Type": "String",
       "Default": "",
       "Description": "Enter S3 bucket name for chef backups & primary backened generated items"
-    },
-    "RestoreFile": {
-      "Type": "String",
-      "Default": "",
-      "Description": "Enter Filename to restore backup from in backup bucket (Optional)"
     },
     "SupportEmail": {
       "Type": "String",
@@ -280,7 +270,7 @@
         "Name" : { "Fn::Join" : [ "", [ "chef-vip", ".", { "Ref" : "HostedZone" } ,"." ] ] },
         "Type" : "A",
         "TTL" : "60",
-        "ResourceRecords" : [ { "Ref": "VIP" } ]
+        "ResourceRecords" : [ { "Ref": "IP" } ]
       }
     },
     "BackendEC2Instance": {
@@ -336,7 +326,7 @@
                 "export VIP_DNS='", { "Fn::Join" : [ "", [ "chef-vip", ".", { "Ref" : "HostedZone" } ] ] } ,"'\n",
                 "export DNS='", { "Fn::Join" : [ "", [ "chef-backend", ".", "int", ".", { "Ref" : "HostedZone" } ] ] } ,"'\n",
                 "export IP='", { "Ref" : "IP" },"'\n",
-                "export VIP='", { "Ref" : "VIP" } ,"'\n",
+                "export VIP='", { "Ref" : "IP" } ,"'\n",
                 "export FE01_DNS='", { "Fn::Join" : [ "", [ "chef-fe-01", ".", "int", ".", { "Ref" : "HostedZone" } ] ] } ,"'\n",
                 "export FE01_IP='", { "Ref" : "FE01IP" } ,"'\n",
                 "export FE02_DNS='", { "Fn::Join" : [ "", [ "chef-fe-02", ".", "int", ".", { "Ref" : "HostedZone" } ] ] } ,"'\n",

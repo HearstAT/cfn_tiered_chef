@@ -40,16 +40,6 @@
         "Default": "arn:aws:iam::",
         "Description": "Secondary SSL Certficate ARN for SSL Certficate"
     },
-    "BackendVIP": {
-        "Type": "String",
-        "Default": "10.0.0.10",
-        "Description": "Enter Backend VIP"
-    },
-    "RestoreFile": {
-        "Type": "String",
-        "Default": "backup_$date",
-        "Description": "Enter Filename to restore backup from in backup bucket (Optional)"
-    },
     "SignupDisable": {
         "Type": "String",
         "Default": "true",
@@ -374,7 +364,7 @@
             },
             {
                 "Label" : { "default": "Chef Configuration" },
-                "Parameters" : ["ChefSubdomain", "BackendVIP", "SignupDisable", "SupportEmail", "LicenseCount", "ChefDir", "S3Dir", "BackupEnable", "RestoreFile"]
+                "Parameters" : ["ChefSubdomain", "SignupDisable", "SupportEmail", "LicenseCount", "ChefDir", "S3Dir", "BackupEnable"]
             },
             {
                 "Label" : { "default": "Database Configuration" },
@@ -555,7 +545,7 @@
             {
                 "Effect":"Allow",
                 "Action": [ "s3:*" ],
-                "Resource": [ { "Fn::Join" : [ "", [ "arn:aws:s3:::",{"Fn::If" : ["CreateChefBucket", {"Ref" : "ChefBucket"}, {"Ref" : "BucketName"}]}, "/" ] ] },
+                "Resource": [ { "Fn::Join" : [ "", [ "arn:aws:s3:::",{"Fn::If" : ["CreateChefBucket", {"Ref" : "ChefBucket"}, {"Ref" : "BucketName"}]} ] ] },
                               { "Fn::Join" : [ "", [ "arn:aws:s3:::", {"Fn::If" : ["CreateChefBucket", {"Ref" : "ChefBucket"}, {"Ref" : "BucketName"}]}, "/*" ] ] } ]
             },
             {
@@ -589,7 +579,7 @@
                 {
                     "Effect":"Allow",
                     "Action": [ "s3:*" ],
-                    "Resource": [{ "Fn::Join" : [ "", [ "arn:aws:s3:::", { "Ref" : "CookbookBucket" }, "/" ] ] },
+                    "Resource": [{ "Fn::Join" : [ "", [ "arn:aws:s3:::", { "Ref" : "CookbookBucket" } ] ] },
                                  { "Fn::Join" : [ "", [ "arn:aws:s3:::", { "Ref" : "CookbookBucket" }, "/*" ] ] } ]
                 },
                 {
@@ -725,7 +715,6 @@
                 "AccessKey": {"Fn::If" : ["ExistingIAM", {"Ref" : "AccessKey"}, { "Ref" : "HostKeys"}]},
                 "SecretKey": {"Fn::If" : ["ExistingIAM", {"Ref" : "SecretKey"}, { "Fn::GetAtt" : [ "HostKeys", "SecretAccessKey" ] }]},
                 "ENI": { "Ref": "BackendENI" },
-                "VIP": { "Ref": "BackendVIP" },
                 "IP": { "Fn::GetAtt" : [ "BackendENI", "PrimaryPrivateIpAddress" ] },
                 "FE01IP": { "Fn::GetAtt" : [ "FE01ENI", "PrimaryPrivateIpAddress" ] },
                 "FE02IP": { "Fn::GetAtt" : [ "FE02ENI", "PrimaryPrivateIpAddress" ] },
@@ -733,7 +722,6 @@
                 "SecondaryDomain": { "Ref": "SecondaryDomain" },
                 "HostedSubdomain": { "Ref": "ChefSubdomain" },
                 "BackupEnable": { "Ref" : "BackupEnable" },
-                "RestoreFile": { "Ref" : "RestoreFile" },
                 "BackendSSL": { "Ref" : "BackendSSL" },
                 "ExistingInstall": { "Ref" : "ExistingInstall" },
                 "Bucket": {"Fn::If" : ["CreateChefBucket", {"Ref" : "ChefBucket"}, {"Ref" : "BucketName"}]},

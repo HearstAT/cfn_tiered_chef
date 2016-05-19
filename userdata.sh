@@ -23,10 +23,10 @@
 # ${ENVIRONMENT} == Environment
 # ${BUCKET} == ChefBucket || ExternalBucket
 # ${BACKUP_ENABLE} == BackupEnable && ['backup']['enable_backups']
-# ${RESTORE_FILE} == RestoreFile && ['backup']['restore_file']
 # ${EXISTING_INSTALL} == ExistingInstall
 # ${CHEFDIR} == ChefDir
 # ${S3DIR} == S3Dir
+# ${ENABLE_SSL} == BackendSSL
 # ${DB_CHOICE} == DBChoice
 # ${DB_USER} == DBUser
 # ${DB_PASSWORD} == DBPassword
@@ -81,9 +81,9 @@ if [ ! -d "${S3DIR}" ]; then
 fi
 
 # Mount S3 Bucket to Directory
-s3fs -o allow_other -o umask=000 -o use_cache=/tmp -o iam_role=${IAM_ROLE} -o endpoint=${REGION} ${BUCKET} ${S3DIR} || error_exit 'Failed to mount s3fs'
+s3fs -o allow_other -o umask=000 -o iam_role=${IAM_ROLE} -o endpoint=${REGION} ${BUCKET} ${S3DIR} || error_exit 'Failed to mount s3fs'
 
-echo -e "${BUCKET} ${S3DIR} fuse.s3fs rw,_netdev,allow_other,umask=0022,use_cache=/tmp,iam_role=${IAM_ROLE},endpoint=${REGION},retries=5,multireq_max=5 0 0" >> /etc/fstab || error_exit 'Failed to add mount info to fstab'
+echo -e "${BUCKET} ${S3DIR} fuse.s3fs rw,_netdev,allow_other,umask=000,iam_role=${IAM_ROLE},endpoint=${REGION},retries=5,multireq_max=5 0 0" >> /etc/fstab || error_exit 'Failed to add mount info to fstab'
 
 # Sleep to allow s3fs to connect
 sleep 20
@@ -112,23 +112,6 @@ if [ ${ROLE} == 'backend' ]; then
     echo "${SUMO_PASSWORD}" | tr -d '\n' > ${S3DIR}/sumologic/password
     echo "${SUMO_ACCESS_ID}" | tr -d '\n' > ${S3DIR}/sumologic/access_id
     echo "${SUMO_ACCESS_KEY}" | tr -d '\n' > ${S3DIR}/sumologic/access_key
-
-    # Install awscli
-    pip install awscli || error_exit 'could not install aws cli tools'
-    # Run aws config
-    if [ -n $(command -v aws) ]; then
-        set +xv
-        echo "Setting up AWS Config, turning of verbose"
-        aws configure set default.region ${REGION} || error_exit 'Failed to set aws region'
-        aws configure set aws_access_key_id ${ACCESS_KEY} || error_exit 'Failed to set aws access key'
-        aws configure set aws_secret_access_key ${SECRET_KEY} || error_exit 'Failed to set aws secret key'
-        echo "AWS Config complete, turning verbose back on"
-        set -xv
-    else
-        error_exit 'awscli does not exist!'
-    fi
-    # Backend Only: Set Chef VIP
-    aws ec2 assign-private-ip-addresses --network-interface-id  ${ENI}  --allow-reassignment --private-ip-addresses  ${VIP}  || error_exit 'Failed to set VIP'
 fi
 
 # install chef
@@ -158,8 +141,7 @@ cat > "${CHEFDIR}/chef_stack.json" << EOF
     "${COOKBOOK}": {
         "backup": {
             "restore": false,
-            "enable_backups": ${BACKUP_ENABLE},
-            "restore_file": "${RESTORE_FILE}"
+            "enable_backups": ${BACKUP_ENABLE}
         },
         "licensecount": "${LICENSE_COUNT}",
         "manage": {
@@ -181,6 +163,9 @@ cat > "${CHEFDIR}/chef_stack.json" << EOF
         "cookbook": {
             "ext_enable": ${COOKBOOK_CHOICE},
             "bucket": "${COOKBOOK_BUCKET}"
+        },
+        "aws": {
+            "region": "${REGION}"
         },
         "s3": {
             "dir": "${S3DIR}"
