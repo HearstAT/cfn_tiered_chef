@@ -234,6 +234,23 @@
       ]
     }
   },
+  "SecondaryChefDNS" : {
+    "Type" : "AWS::Route53::RecordSetGroup",
+    "Properties" : {
+      "HostedZoneName": { "Fn::Join" : [ "",[{ "Ref" : "HostedZone" } ,"." ] ]},
+      "Comment" : "Zone apex alias targeted to myELB LoadBalancer.",
+      "RecordSets" : [
+        {
+          "Name" : { "Fn::Join": ["",[{ "Ref": "HostedSubdomain" }, "-secondary", ".", { "Ref": "HostedZone" },"."]] },
+          "Type" : "A",
+          "AliasTarget" : {
+              "HostedZoneId" : { "Fn::GetAtt" : ["SecondaryElasticLoadBalancer", "CanonicalHostedZoneNameID"] },
+              "DNSName" : { "Fn::GetAtt" : ["SecondaryElasticLoadBalancer","CanonicalHostedZoneName"] }
+          }
+        }
+      ]
+    }
+  },
   "FE01EC2Instance": {
     "Type": "AWS::EC2::Instance",
       "Properties": {
