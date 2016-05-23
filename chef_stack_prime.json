@@ -665,6 +665,7 @@
       "Properties" : {
         "Size" : "50",
         "Iops" : "1500",
+        "VolumeType" : "io1",
         "SnapshotId" : { "Ref": "SnapShotID"},
         "Encrypted" : "false",
         "AvailabilityZone" : { "Fn::GetAtt" : [ "PrivateSubnet", "AvailabilityZone" ] } ,
@@ -677,6 +678,7 @@
       "Properties" : {
         "Size" : "50",
         "Iops" : "1500",
+        "VolumeType" : "io1",
         "Encrypted" : "false",
         "AvailabilityZone" : { "Fn::GetAtt" : [ "PrivateSubnet", "AvailabilityZone" ] } ,
         "Tags" : [ { "Key" : "Name", "Value" : "Chef-Backend-Drive" } ]
