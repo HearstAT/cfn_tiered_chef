@@ -115,12 +115,19 @@ if [ ${ROLE} == 'backend' ]; then
 fi
 
 # install chef
-curl -L https://omnitruck.chef.io/install.sh | bash || error_exit 'could no install chef'
+if [ ! -f "/usr/bin/chef-client" ]; then
+    curl -L https://omnitruck.chef.io/install.sh | bash || error_exit 'could no install chef'
+fi
 
 # Install cfn bootstraping tools
-easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz || error_exit "could not install cfn bootstrap tools"
+if [ ! -f "/usr/local/bin/cfn-signal" ]; then
+    easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz || error_exit "could not install cfn bootstrap tools"
+fi
 
-mkdir -p /etc/chef/ohai/hints || error_exit 'Failed to create ohai folder'
+if [ ! -d "/etc/chef/ohai/hints" ]; then
+    mkdir -p /etc/chef/ohai/hints || error_exit 'Failed to create ohai folder'
+fi
+
 touch /etc/chef/ohai/hints/ec2.json || error_exit 'Failed to create ec2 hint file'
 touch /etc/chef/ohai/hints/iam.json || error_exit 'Failed to create iam hint file'
 
@@ -223,7 +230,9 @@ else
 fi
 
 # Install berks
-/opt/chef/embedded/bin/gem install berkshelf
+if [ ! -f "/opt/chef/embedded/bin/berks" ]; then
+    /opt/chef/embedded/bin/gem install berkshelf
+fi
 
 # Backend Only: Copy post install json and swap attribute to true if needed
 if [ ${ROLE} == 'backend' ]; then
