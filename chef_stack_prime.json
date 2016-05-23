@@ -137,6 +137,17 @@
         "Default": "",
         "Description": "Only Required if ExisitingIAM is set to true"
     },
+    "ExistingEBS": {
+        "Type": "String",
+        "Default": "true",
+        "AllowedValues": ["true", "false"],
+        "Description": "Choose to use an existing EBS Snapshot for backend rather than creating one"
+    },
+    "SnapShotID": {
+        "Type": "String",
+        "Default": "",
+        "Description": "Enter Snapshot ID to Use"
+    },
     "AccessKey": {
         "Type": "String",
         "NoEcho": "true",
@@ -360,7 +371,7 @@
             },
             {
                 "Label" : { "default": "Re-Deploy Configuration (When Using Existing Items)" },
-                "Parameters" : ["ExistingInstall", "ExistingIAM", "IAMUser", "AccessKey", "SecretKey"]
+                "Parameters" : ["ExistingInstall", "ExistingIAM", "IAMUser", "AccessKey", "SecretKey", "ExistingEBS", "SnapShotID"]
             },
             {
                 "Label" : { "default": "Chef Configuration" },
@@ -470,6 +481,8 @@
   "Conditions" : {
     "CreateChefBucket" : {"Fn::Equals" : [{"Ref" : "UseExistingBucket"}, "false"]},
     "ExternalCookbooks" : {"Fn::Equals" : [{"Ref" : "ExternalCookbooks"}, "external"]},
+    "ExistingEBS" : {"Fn::Equals" : [{"Ref" : "ExistingEBS"}, "true"]},
+    "FreshEBS" : {"Fn::Equals" : [{"Ref" : "ExistingEBS"}, "false"]},
     "ExistingIAM" : {"Fn::Equals" : [{"Ref" : "ExistingIAM"}, "true"]}
   },
   "Resources" : {
@@ -646,6 +659,29 @@
         "SubnetId": { "Ref": "PrivateSubnet" }
      }
     },
+    "SnapshotEBS" : {
+      "Type" : "AWS::EC2::Volume",
+      "Condition" : "ExistingEBS",
+      "Properties" : {
+        "Size" : "50",
+        "Iops" : "1500",
+        "SnapshotId" : { "Ref": "SnapShotID"},
+        "Encrypted" : "false",
+        "AvailabilityZone" : { "Fn::GetAtt" : [ "PrivateSubnet", "AvailabilityZone" ] } ,
+        "Tags" : [ { "Key" : "Name", "Value" : "Chef-Backend-Drive" } ]
+      }
+    },
+    "FreshEBS" : {
+      "Type" : "AWS::EC2::Volume",
+      "Condition" : "FreshEBS",
+      "Properties" : {
+        "Size" : "50",
+        "Iops" : "1500",
+        "Encrypted" : "false",
+        "AvailabilityZone" : { "Fn::GetAtt" : [ "PrivateSubnet", "AvailabilityZone" ] } ,
+        "Tags" : [ { "Key" : "Name", "Value" : "Chef-Backend-Drive" } ]
+      }
+    },
     "FE01ENI" : {
       "Type" : "AWS::EC2::NetworkInterface",
       "Properties" : {
@@ -725,6 +761,7 @@
                 "BackendSSL": { "Ref" : "BackendSSL" },
                 "ExistingInstall": { "Ref" : "ExistingInstall" },
                 "Bucket": {"Fn::If" : ["CreateChefBucket", {"Ref" : "ChefBucket"}, {"Ref" : "BucketName"}]},
+                "BackendEBSID": {"Fn::If" : ["ExistingEBS", {"Ref" : "SnapshotEBS"}, { "Ref" : "FreshEBS"}]},
                 "Cookbook": { "Ref": "Cookbook" },
                 "CookbookGit": { "Ref": "CookbookGit" },
                 "CookbookGitBranch": { "Ref": "CookbookGitBranch" },

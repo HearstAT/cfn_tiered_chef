@@ -49,6 +49,11 @@
       "Type" : "String",
       "Default": ""
     },
+    "BackendEBSID": {
+      "Description" : "Enter ID of EBS Volume to Attach",
+      "Type" : "String",
+      "Default": ""
+    },
     "AccessKey": {
       "Description" : "Enter User Access Key",
       "Type" : "String",
@@ -284,6 +289,9 @@
         "KeyName": { "Ref": "KeyName" },
         "Tags": [ { "Key": "Name", "Value": "Chef-Backend" }],
         "NetworkInterfaces" : [ { "NetworkInterfaceId" : { "Ref" : "ENI" }, "DeviceIndex" : 0 } ],
+        "Volumes" : [
+           { "VolumeId" : { "Ref" : "BackendEBSID" }, "Device" : "/dev/sdb" }
+        ],
         "BlockDeviceMappings": [
           {
             "DeviceName": "/dev/sda1",
@@ -292,15 +300,6 @@
               "DeleteOnTermination": "true",
               "Iops" : "600",
               "VolumeSize": "20"
-            }
-          },
-          {
-            "DeviceName": "/dev/sdb",
-            "Ebs": {
-              "VolumeType": "io1",
-              "DeleteOnTermination": "true",
-              "Iops" : "1500",
-              "VolumeSize": "50"
             }
           }
         ],
