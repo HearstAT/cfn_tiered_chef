@@ -246,6 +246,8 @@ EOF
 
 # Prep for letsencrypt later
 cat > /etc/chef/client.rb <<EOF
+log_level        :info
+log_location     STDOUT
 cookbook_path "${CHEFDIR}/berks-cookbooks"
 json_attribs "${CHEFDIR}/runner.json"
 chef_zero.enabled
@@ -256,6 +258,8 @@ EOF
 # Switch to main directory
 cd ${CHEFDIR}
 cat > ${CHEFDIR}/client.rb <<EOF
+log_level        :info
+log_location     STDOUT
 cookbook_path "${CHEFDIR}/berks-cookbooks"
 json_attribs "${CHEFDIR}/chef_stack.json"
 chef_zero.enabled
