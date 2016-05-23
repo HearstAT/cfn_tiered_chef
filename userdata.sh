@@ -90,7 +90,7 @@ sleep 20
 
 if [ ${ROLE} == 'backend' ]; then
     # make directories
-    mkdir -p ${S3DIR}/mail ${S3DIR}/newrelic ${S3DIR}/sumologic ${S3DIR}/db ${S3DIR}/aws
+    mkdir -p ${S3DIR}/mail ${S3DIR}/newrelic ${S3DIR}/sumologic ${S3DIR}/db ${S3DIR}/aws ${S3DIR}/certs
 
     ## AWS Creds
     echo "${ACCESS_KEY}" | tr -d '\n' > ${S3DIR}/aws/access_key
