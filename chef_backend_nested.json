@@ -290,6 +290,7 @@
             "Ebs": {
               "VolumeType": "standard",
               "DeleteOnTermination": "true",
+              "Iops" : "600",
               "VolumeSize": "20"
             }
           },
@@ -298,6 +299,7 @@
             "Ebs": {
               "VolumeType": "standard",
               "DeleteOnTermination": "true",
+              "Iops" : "1500",
               "VolumeSize": "50"
             }
           }
