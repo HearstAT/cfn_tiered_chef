@@ -288,7 +288,7 @@
           {
             "DeviceName": "/dev/sda1",
             "Ebs": {
-              "VolumeType": "standard",
+              "VolumeType": "io1",
               "DeleteOnTermination": "true",
               "Iops" : "600",
               "VolumeSize": "20"
@@ -297,7 +297,7 @@
           {
             "DeviceName": "/dev/sdb",
             "Ebs": {
-              "VolumeType": "standard",
+              "VolumeType": "io1",
               "DeleteOnTermination": "true",
               "Iops" : "1500",
               "VolumeSize": "50"
